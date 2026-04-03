@@ -1,0 +1,1365 @@
+<krpano>
+	
+	<!--
+		krpano Maps Plugin 1.22
+		- dependencies: radar.js, combobox.xml
+	-->
+	
+	<style name="krpanomaps"
+		type="krpano"
+		krpanoembedsettings.object="{asyncframeloop:false, contextmenu:false, fullscreen:false}"
+		onloaded="krpanomaps_layer_onloaded();"
+		/>
+	
+
+	<!-- several tile-providers for maps images (more can be added by defining new <krpanomaps_tileprovider> elements) -->
+	
+	<krpanomaps_tileprovider name="openstreetmaps"
+		description="Open Street Map"
+		maptype="osm"
+		tileurl="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+		attribution="[a href='http://www.openstreetmap.org/copyright' target='_blank']OpenStreetMap[/a]"
+		multiresthreshold="-0.4"
+		/>
+	
+	<krpanomaps_tileprovider name="arcgis_worldmap"
+		description="ArcGIS Worldmap"
+		maptype="osm"
+		tileurl="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.jpg"
+		attribution="[a href='http://goto.arcgisonline.com/maps/World_Street_Map' target='_blank']ArcGIS World Imagery[/a]"
+		multiresthreshold="0.0"
+		/>
+	
+	<krpanomaps_tileprovider name="arcgis_streetmap"
+		description="ArcGIS Streetmap"
+		maptype="osm"
+		tileurl="https://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+		attribution="[a href='http://goto.arcgisonline.com/maps/World_Street_Map' target='_blank']ArcGIS Street Map[/a]"
+		multiresthreshold="-0.4"
+		/>
+	
+	<krpanomaps_tileprovider name="earth_at_night"
+		description="Earth at Night"
+		maptype="osm"
+		tileurl="https://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpg"
+		attribution="[a href='https://earthdata.nasa.gov/' target='_blank']NASA Earth at Night[/a]"
+		multiresthreshold="0.0"
+		maxres="65536"
+		/>
+		
+	<!-- Austria Map (by basemap.at)
+	<krpanomaps_tileprovider name="basemap_at"
+		description="basemap.at"
+		maptype="basemap_at"
+		tileurl="https://mapsneu.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.jpeg"
+		attribution="[a href='https://www.basemap.at' target='_blank']basemap.at[/a]"
+		latmin="46.247" latmax="49.108"
+		lngmin="9.288" lngmax="17.208"
+		multiresthreshold="0.0"
+		minres="4096"
+		/>
+	-->
+	
+	<!-- German WMS TopPlusOpen
+	<krpanomaps_tileprovider name="wmts_topplus_open"
+		description="WMS TopPlusOpen"
+		maptype="osm"
+		tileurl="https://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{z}/{y}/{x}.png"
+		attribution="[a href='https://gdz.bkg.bund.de/index.php/default/wms-topplusopen-wms-topplus-open.html' target='_blank']WMS TopPlusOpen[/a]"
+		multiresthreshold="-0.4"
+		/>
+	-->
+	
+	<!-- Switzerland Maps by SwissTopo
+	<krpanomaps_tileprovider name="swisstopo_road"
+		description="SwissTopo Road"
+		maptype="swisstopo"
+		tileurl="https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg"
+		latmin="45.0769477403" latmax="48.5308275417"
+		lngmin="5.52260949059" lngmax="10.9427014502"
+		attribution="[a href='https://map.geo.admin.ch' target='_blank']SwissTopo[/a]"
+		multiresthreshold="0.0"
+		minres="4096"
+		/>
+
+	<krpanomaps_tileprovider name="swisstopo_sat"
+		description="SwissTopo Sat"
+		maptype="swisstopo"
+		tileurl="https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg"
+		latmin="45.0769477403" latmax="48.5308275417"
+		lngmin="5.52260949059" lngmax="10.9427014502"
+		attribution="[a href='https://map.geo.admin.ch' target='_blank']SwissTopo[/a]"
+		multiresthreshold="0.0"
+		minres="4096"
+		/>
+	-->
+	
+	<!-- Google Maps Tiles - for internal testing only!
+	<krpanomaps_tileprovider name="googlemaps_tiles"
+		description="Google Maps Satellite"
+		maptype="osm"
+		tileurl="https://khms0.googleapis.com/kh?v=962&amp;hl=de&amp;x={x}&amp;y={y}&amp;z={z}"
+		attribution="[a href='https://www.google.com/maps' target='_blank']Google[/a]"
+		multiresthreshold="0.0"
+		/>
+	-->
+		
+		
+	<!-- embedded default images (optionally overwritable by redefinition) -->
+		
+	<data name="krpanomaps_button_zoomin">
+		<svg xmlns="http://www.w3.org/2000/svg" style="display:block;" width="100%" height="100%" viewBox="0 0 20 20">
+			<path fill="none" stroke="#333" stroke-width="1" d="M 4 10 H 16 M 10 4 V 16" />
+		</svg>
+	</data>
+	
+	<data name="krpanomaps_button_zoomout">
+		<svg xmlns="http://www.w3.org/2000/svg" style="display:block;" width="100%" height="100%" viewBox="0 0 20 20">
+			<path fill="none" stroke="#333" stroke-width="1" d="M 4 10 H 16" />
+		</svg>
+	</data>
+	
+	<data name="krpanomaps_button_zoomarea">
+		<svg xmlns="http://www.w3.org/2000/svg" style="display:block;" width="100%" height="100%" viewBox="0 0 20 20">
+			<path fill="none" stroke="#333" stroke-width="1" d="M 2 5 H 18 M 2 15 H 18 M 5 2 V 18 M 15 2 V 18" />
+		</svg>
+	</data>
+	
+	<data name="krpanomaps_button_zoompos">
+		<svg xmlns="http://www.w3.org/2000/svg" style="display:block;" width="100%" height="100%" viewBox="0 0 20 20">
+			<circle fill="none" stroke="#333" cx="10" cy="10" r="8" />
+			<circle fill="#333" stroke="#333" cx="10" cy="10" r="3" />
+		</svg>
+	</data>
+		
+	<data name="krpanomaps_mapspot_normal">
+		<svg xmlns="http://www.w3.org/2000/svg" style="display:block" width="32" height="32" viewBox="0 0 32 32">
+			<radialGradient id="g1" cx="14" cy="6.5" r="18" fx="14" fy="6.5" gradientUnits="userSpaceOnUse">
+				<stop style="stop-color:#BBEEFF;" offset="0.2" />
+				<stop style="stop-color:#66AAFF;" offset="0.8" />
+			</radialGradient>
+			<ellipse style="fill:#000000;fill-opacity:0.2;stroke-width:0;" cx="16" cy="27.5" rx="8" ry="2.5" />
+			<path fill="url('#g1')" stroke="#224488" stroke-width="1" d="M 16,2.5 C 11,2.5 6.5,6 6.5,11 6.5,15 9,18 16,28 23,18 25.5,15 25.5,11 25.5,6 21,2.5 16,2.5 Z" />
+		</svg>
+	</data>
+	
+	<data name="krpanomaps_mapspot_hover">
+		<svg xmlns="http://www.w3.org/2000/svg" style="display:block" width="32" height="32" viewBox="0 0 32 32">
+			<radialGradient id="g1" cx="14" cy="6.5" r="18" fx="14" fy="6.5" gradientUnits="userSpaceOnUse">
+				<stop style="stop-color:#CCFFFF;" offset="0.2" />
+				<stop style="stop-color:#99BBFF;" offset="0.8" />
+			</radialGradient>
+			<ellipse style="fill:#000000;fill-opacity:0.2;stroke-width:0;" cx="16" cy="27.5" rx="8" ry="2.5" />
+			<path fill="url('#g1')" stroke="#4466AA" stroke-width="1" d="M 16,2.5 C 11,2.5 6.5,6 6.5,11 6.5,15 9,18 16,28 23,18 25.5,15 25.5,11 25.5,6 21,2.5 16,2.5 Z" />
+		</svg>
+	</data>
+	
+	<data name="krpanomaps_mapspot_active">
+		<svg xmlns="http://www.w3.org/2000/svg" style="display:block" width="32" height="32" viewBox="0 0 32 32">
+			<radialGradient id="g1" cx="14" cy="6.5" r="18" fx="14" fy="6.5" gradientUnits="userSpaceOnUse">
+				<stop style="stop-color:#BBFFEE;" offset="0.2" />
+				<stop style="stop-color:#44FF44;" offset="0.8" />
+			</radialGradient>
+			<ellipse style="fill:#000000;fill-opacity:0.2;stroke-width:0;" cx="16" cy="27.5" rx="8" ry="2.5" />
+			<path fill="url('#g1')" stroke="#228822" stroke-width="1" d="M 16,2.5 C 11,2.5 6.5,6 6.5,11 6.5,15 9,18 16,28 23,18 25.5,15 25.5,11 25.5,6 21,2.5 16,2.5 Z" />
+		</svg>
+	</data>
+
+	<data name="krpanomaps_mapspot_ball">
+		<svg xmlns="http://www.w3.org/2000/svg" style="display:block" width="32" height="32" viewBox="0 0 32 32">
+			<radialGradient id="g1" cx="14" cy="6.5" r="18" fx="14" fy="6.5" gradientUnits="userSpaceOnUse">
+				<stop style="stop-color:#BBEEFF;" offset="0.2" />
+				<stop style="stop-color:#66AAFF;" offset="0.8" />
+			</radialGradient>
+			<ellipse style="fill:#000000;fill-opacity:0.2;stroke-width:0;" cx="16" cy="24" rx="8" ry="2.5" />
+			<circle fill="url('#g1')" stroke="#224488" stroke-width="1" r="9" cx="16" cy="16" />
+		</svg>
+	</data>
+	
+
+	<!-- the krpano Maps Plugin code -->
+	
+	<action name="krpanomaps_layer_onloaded" type="Javascript"><![CDATA[
+		
+		if (krpano.build < "2024-01-01")
+		{
+			krpano.trace(3,"krpanomaps.xml - too old krpano version (min. 1.22)");
+			return;
+		}
+		
+		var tileproviders = krpano.get("krpanomaps_tileprovider");
+		if (!tileproviders || !(tileproviders.count >= 1))
+		{
+			krpano.trace(3,"krpanomaps.xml - missing <krpanomaps_tileprovider> elements!");
+			return;
+		}
+		
+		var plugin = caller;
+		var krpanomaps = plugin.krpano;		// the krpano viewer of the maps plugins
+		var mapview = krpanomaps.view;
+		
+		var FLAT_HFOV = 0.001;	// use a very small fov to avoid any spherical coordinate distortions
+		var LATLNG_DP = 6;		// the lat,lng decimal points when showing coordinates
+		
+		
+		// IE11 Math polyfills
+		Math.sinh = Math.sinh || function(x){ var y=Math.exp(x); return (y-1/y)/2; };
+		Math.log1p = Math.log1p || function log1p(x) { return (x = +x) > -1e-8 && x < 1e-8 ? x - x * x / 2 : Math.log(1 + x); };
+		Math.asinh = Math.asinh || function(x){ var absX=Math.abs(x),w; if (absX < 3.725290298461914e-9) return x; if (absX > 268435456) { w=Math.log(absX)+Math.LN2; } else if (absX > 2){ w=Math.log(2*absX+1/(Math.sqrt(x*x+1)+absX)) } else{ var t=x*x, w=Math.log1p(absX+t/(1+Math.sqrt(1+t))) }; return x > 0 ? w : -w; };
+
+		
+		// lat/lng/zoom conversion functions (ath/atv in a flat-pano with a Mercator projection)
+		function lat_to_atv(lat){ return ((1.0 - Math.asinh(Math.tan(lat * Math.PI/180)) / Math.PI) / 2.0 - 0.5) * FLAT_HFOV; }
+		function atv_to_lat(atv){ return Math.atan(Math.sinh(Math.PI * (1.0 - ((atv / FLAT_HFOV) + 0.5) * 2.0))) * 180.0/Math.PI; }
+		function lng_to_ath(lng){ return lng / 360.0 * FLAT_HFOV; }
+		function ath_to_lng(ath){ return ath / FLAT_HFOV * 360.0; }
+		
+		// zoombase - let the zoom be relative to the "screen" or to the maps "layer" element
+		plugin.registerattribute("zoombase", "screen", function(s){ mapview.fovtype = s == "screen" ? "SFOV" : "HFOV"; });
+		
+		function getzoombase(base){ return plugin.zoombase == "screen" ? base / Math.sqrt(screen.width*screen.width + screen.height*screen.height) : 1.0; }
+		function fov_to_zoom(hfov){ return Math.log(FLAT_HFOV / (hfov*getzoombase(256))) / Math.log(2.0); }
+		function zoom_to_fov(zoom){ return (FLAT_HFOV / Math.exp(zoom * Math.log(2.0))) / getzoombase(256); }
+
+		// expose the conversion functions to the plugin
+		plugin.lat_to_atv = lat_to_atv;
+		plugin.atv_to_lat = atv_to_lat;
+		plugin.lng_to_ath = lng_to_ath;
+		plugin.ath_to_lng = ath_to_lng;
+		plugin.fov_to_zoom = fov_to_zoom;
+		plugin.zoom_to_fov = zoom_to_fov;
+
+		// extend the view with lng/lat/zoom settings
+		mapview.registerattribute("lng",  0.0, function(lng){ mapview.hlookat = lng_to_ath(lng); }, function(){ return ath_to_lng(mapview.hlookat); });
+		mapview.registerattribute("lat",  0.0, function(lat){ mapview.vlookat = lat_to_atv(lat); }, function(){ return atv_to_lat(mapview.vlookat); });
+		mapview.registerattribute("zoom", 0.0, function(z){ mapview.fov = zoom_to_fov(z); }, function(){ return fov_to_zoom(mapview.fov); });
+
+
+		// plugin API for lat/lng/zoom
+		plugin.registerattribute("lng",  0.0, function(v){ mapview.lng  = 1*v; }, function(){ return mapview.lng;  });
+		plugin.registerattribute("lat",  0.0, function(v){ mapview.lat  = 1*v; }, function(){ return mapview.lat;  });
+		plugin.registerattribute("zoom", 0.0, function(v){ mapview.zoom = 1*v; }, function(){ return mapview.zoom; });
+		
+		
+		// use the same path remapping
+		krpanomaps.customParsePath = krpano.customParsePath;
+		
+		// parse tile urls
+		krpanomaps.customParseTilePath = function(path, cubeside, levelindex, h, v, stereo, image)
+		{
+			if (image.maptype == "wiki")
+			{
+				// WikiMaps tile placeholders
+				path = path.split("${x}").join(1*h-1);
+				path = path.split("${y}").join(1*v-1);
+				path = path.split("${z}").join(1*levelindex);
+			}
+			else if (image.maptype == "osm")
+			{
+				// OpenStreetMap tile placeholders
+				path = path.split("{s}").join( "abc"[(Math.random()*3)|0] );
+				path = path.split("{x}").join(1*h-1);
+				path = path.split("{y}").join(1*v-1);
+				path = path.split("{z}").join(1*levelindex);
+			}
+			else if (image.maptype == "basemap_at" || image.maptype == "swisstopo")
+			{
+				// Basemap.at, SwissTopo tile placeholders
+				path = path.split("{x}").join(1*h-1);
+				path = path.split("{y}").join(1*v-1);
+				path = path.split("{z}").join(1*levelindex+3);
+			}
+
+			return path;
+		}
+		
+		// expose some settings of the krpano map viewer directly to the plugin API
+		plugin.view = mapview;
+		plugin.actions = krpanomaps.actions;
+		plugin.hotspots = krpanomaps.hotspot;
+		plugin.layers = krpanomaps.layer;
+		
+		
+		// setup the krpano viewer
+		mapview.limitview = "fullrange";
+		mapview.maxpixelzoom = 2.0;
+		
+		krpanomaps.control.zoomtocursor = true;
+		krpanomaps.control.zoomoutcursor = true;
+		krpanomaps.control.panomousebuttons = 7;
+		krpanomaps.control.zoomtocursor = true;
+		krpanomaps.control.zoomoutcursor = true;
+		krpanomaps.control.draginertia = 0.1;
+		krpanomaps.control.dragfriction = 0.9;
+		krpanomaps.control.movetoaccelerate = 1.0;
+		krpanomaps.control.movetospeed = 10.0;
+		krpanomaps.control.movetofriction = 0.8;
+		krpanomaps.control.keybaccelerate = 0.09;
+		krpanomaps.control.keybfriction = 0.94;
+		krpanomaps.control.keybfovchange = 0.25;
+		krpanomaps.control.mousefovchange = 1.0;
+		krpanomaps.control.fovspeed = 3.0;
+		krpanomaps.control.fovfriction = 0.9;
+		krpanomaps.control.bouncinglimits = false;
+		krpanomaps.control.keycodesin = "";
+		krpanomaps.control.keycodesout = "";
+
+		// hide tile loading errors
+		krpanomaps.network.retrycount = 0;
+		krpanomaps.events.onloaderror = function(err)
+		{
+			//console.log(krpanomaps.lasterror);
+		}
+		
+		// support gesture rotations
+		plugin.registerattribute("gesturerotation", false);
+		
+		var allow_rotation_gesture = false;
+		
+		krpanomaps.events.addListener("ongesture", function()
+		{
+			if (krpanomaps.gesture.event == "start" || allow_rotation_gesture == false) 
+			{
+				// allow the rotation gesture only when holding the gesture for 100ms or longer
+				allow_rotation_gesture = krpanomaps.gesture.dt > 100;
+			}
+		
+			var dr = plugin.gesturerotation && allow_rotation_gesture ? -krpanomaps.gesture.deltarotation : 0;
+			
+			var p1 = krpanomaps.screentosphere(krpanomaps.gesture.centerx, krpanomaps.gesture.centery);
+			var p2 = krpanomaps.screentosphere(krpanomaps.gesture.centerx - krpanomaps.gesture.dx, krpanomaps.gesture.centery - krpanomaps.gesture.dy);
+			
+			var h = mapview.hlookat - p1.x;
+			var v = mapview.vlookat - p1.y;
+			
+			var r = dr * Math.PI / 180.0;
+			var c = Math.cos(r);
+			var s = Math.sin(r);
+			
+			var hr = h*c - v*s;
+			var vr = h*s + v*c;
+			
+			mapview.hlookat = hr + p2.x;
+			mapview.vlookat = vr + p2.y;
+			mapview.camroll += dr;
+		});
+		
+		
+		// load the map tile images
+		
+		function load_tiles(tile_provider)
+		{
+			krpanomaps.image.reset();
+			krpanomaps.image.hfov = FLAT_HFOV;
+			krpanomaps.image.wraparound = true;
+			krpanomaps.image.maptype = tile_provider.maptype || "osm";
+			
+			var maxres = Number(tile_provider.maxres);
+			if ( isNaN(maxres) )
+				maxres = 134217728;
+				
+			var res = 512;
+			
+			var minres = Number(tile_provider.minres);
+			if ( !isNaN(minres) )
+				res = minres;
+			
+			var multires = "256";
+			
+			while (res <= maxres)
+			{
+				multires += "," + (res|0) + "x" + (res|0);
+				res *= 2;
+			}
+			
+			krpanomaps.image.flat = {url:tile_provider.tileurl, multires:multires};
+			
+			var multiresthreshold = Number(tile_provider.multiresthreshold);
+			if ( !isNaN(multiresthreshold) )
+				krpanomaps.image.multiresthreshold = multiresthreshold;
+			
+			// load
+			krpanomaps.actions.loadpanoimage(null, "BLEND(0.5)");
+		
+			// optionally limit the view
+			if (tile_provider.latmin && tile_provider.latmax && tile_provider.lngmin && tile_provider.lngmax)
+			{
+				mapview.limitview = "range";
+				mapview.maxpixelzoom = 2.0;
+				mapview.hlookatmin = lng_to_ath( tile_provider.lngmin );
+				mapview.hlookatmax = lng_to_ath( tile_provider.lngmax );
+				mapview.vlookatmin = lat_to_atv( tile_provider.latmin );
+				mapview.vlookatmax = lat_to_atv( tile_provider.latmax );
+			}
+			
+			if (tile_provider.attribution)
+			{
+				var attribution = krpanomaps.addlayer("attribution");
+				attribution.setvars({keep:true, type:"text", align:"bottomright", x:1, y:1, css:"font-size:10px", bgcolor:0xFFFFFF, bgalpha:0.8, bgroundedge:"3 0 0 0", bgborder:"1 0xFFFFFF 0.8"});
+				attribution.text = "Map Images &copy; " + tile_provider.attribution;
+			}
+			else
+			{
+				krpanomaps.removelayer("attribution");
+			}
+		}
+	
+		plugin.registerattribute("tileprovider", "openstreetmaps", function(s)
+		{
+			var tileprovider = tileproviders.getItem(s)
+			if (tileprovider)
+			{
+				load_tiles( tileprovider );
+			}
+			else
+			{
+				krpano.trace(3,"krpanomaps.xml - no tileprovider '" + s + "'!");
+			}
+		});
+		
+		
+		// plugin API functions (new)
+		
+		plugin.getbounds = function(pnts, areazoomscale, areawidth, areaheight)
+		{
+			// defaults
+			if (!pnts) pnts = krpanomaps.hotspot;
+			if (!areazoomscale) areazoomscale = 1.5;
+			if (!areawidth) areawidth = krpanomaps.stagewidth;
+			if (!areaheight) areaheight = krpanomaps.stageheight;
+		
+			var cnt=0, minlat, minlng, maxlat, maxlng;
+						
+			function addpnt(lat,lng)
+			{
+				if (isNaN(lat) || isNaN(lng))
+					return;
+					
+				lng = ((lng + 180) % 360) - 180;
+				
+				if (cnt == 0)
+				{
+					minlat = maxlat = lat;
+					minlng = maxlng = lng;
+				}
+				else
+				{
+					if (lat < minlat) minlat = lat;
+					if (lat > maxlat) maxlat = lat;
+					
+					var lngC = minlng;
+					var d1 = Math.abs(lng - lngC);
+					var d2 = Math.abs(lng + 360 - lngC);
+					var d3 = Math.abs(lng - 360 - lngC);
+					
+					if (d2 < d1 && d2 < d3) lng = lng + 360;
+					else if (d3 < d1 && d3 < d2) lng = lng - 360;
+						
+					if (lng < minlng) minlng = lng;
+					if (lng > maxlng) maxlng = lng;
+				}
+				
+				cnt++;
+			}
+		
+			pnts.forEach( function(obj)
+			{
+				if (obj.ismapspot !== false)
+				{
+					if (obj.ispoly || (!obj.url && obj.point && obj.point.count > 0))
+					{
+						obj.point.forEach( function(p){ addpnt(p.lat, p.lng); });
+					}
+					else
+					{
+						addpnt(obj.lat, obj.lng);
+					}
+				}
+			});
+			
+			var ret = null;
+			
+			if (cnt > 0)
+			{
+				var centerlat = (minlat + maxlat)/2;
+				var centerlng = (minlng + maxlng)/2;
+				
+				var zoom = -1;
+				
+				if (areawidth > 0 && areaheight > 0)
+				{
+					areazoomscale = 1*areazoomscale / getzoombase(areawidth);
+					var hfov = areazoomscale * (lng_to_ath(maxlng) - lng_to_ath(minlng));
+					var vfov = areazoomscale * (lat_to_atv(minlat) - lat_to_atv(maxlat));
+					zoom = fov_to_zoom( Math.max(hfov,vfov * (areawidth/ areaheight)) );
+				}
+				
+				ret = {count:cnt, minlat:minlat, minlng:minlng, maxlat:maxlat, maxlng:maxlng, centerlat:centerlat, centerlng:centerlng, zoom:zoom};
+			}
+			
+			return ret;
+		}
+		
+		plugin.distance = function(lat1, lng1, lat2, lng2, unit)
+		{
+			// Source: https://geodatasource.com/developers/javascript
+			if ((lat1 == lat2) && (lng1 == lng2))
+			{
+				return 0;
+			}
+			else
+			{
+				var radlat1 = Math.PI * lat1/180;
+				var radlat2 = Math.PI * lat2/180;
+				var theta = lng1 - lng2;
+				var radtheta = Math.PI * theta/180;
+				var dist = Math.sin(radlat1)*Math.sin(radlat2) + Math.cos(radlat1)*Math.cos(radlat2)*Math.cos(radtheta);
+				if (dist > 1) dist = 1;
+				return Math.acos(dist) * 180/Math.PI * (unit == "km" ? 111.18957696 : unit == "miles" ? 69.09 : 1.0);	// degree by default
+			}
+		}
+
+		plugin.panto = function(lat, lng, zoom, mode, time, tweentype, donecallback)
+		{
+			// defaults for optional parameters:
+			if (!zoom && zoom != 0.0) zoom = mapview.zoom;
+			if (!mode) mode = "auto";
+			if (!time) time = 0.5;
+			if (!tweentype) tweentype = "power";
+			
+			// ensure Numbers (convert Strings)
+			lat = 1*lat;
+			lng = 1*lng;
+			zoom = 1*zoom;
+			time = 1*time;
+			
+			// get the shortest 360 wraparound position
+			mapview.lng = krpano.functions.adjust360(mapview.lng, lng);
+			
+			if (krpanomaps.stagewidth < 1 || krpanomaps.stageheight < 1 || krpanomaps.image.loadstate < 1)
+			{
+				// map not ready, set directly
+				
+				mapview.lat = lat;
+				mapview.lng = lng;
+				mapview.zoom = zoom;
+				
+				krpano.call(donecallback, plugin);
+				
+				return;
+			}
+			
+			var bounds = plugin.getbounds([{lat:mapview.lat, lng:mapview.lng}, {lat:lat, lng:lng}], 2.2);
+			
+			// stop any current animations
+			krpanomaps.stoptween(mapview, {lat:0, lng:0, zoom:0, hlookat:0, vlookat:0, fov:0, camroll:0});
+			
+			var needzoomout = bounds.zoom < mapview.zoom;
+			var needzoomin = (needzoomout && (bounds.zoom < zoom)) || (mapview.zoom < zoom);
+				
+			if (mode == "auto" && (needzoomout || needzoomin))
+			{
+				var zoom1, zoom2, zoom3;
+				var t1, t2, t3;
+				
+				t2 = plugin.distance(mapview.lat, mapview.lng, lat, lng);
+				
+				t2 = Math.log(1 + Math.sqrt(t2));
+				var f = 1.0 / 1.0; 
+				
+				if (needzoomout)
+				{
+					if (zoom > bounds.zoom)
+					{
+						zoom1 = bounds.zoom;
+						zoom2 = bounds.zoom;
+						t1 = 0.2 * Math.abs(bounds.zoom - mapview.zoom);
+						t2 = f * t2 * Math.log(1+bounds.zoom) * time;
+					}
+					else
+					{
+						zoom1 = zoom;
+						zoom2 = zoom;
+						t1 = 0.2 * Math.abs(zoom - mapview.zoom);
+						t2 = f * t2 * Math.log(1+mapview.zoom) * time;
+						
+						needzoomin = false;
+					}
+				}
+				else
+				{
+					zoom1 = mapview.zoom;
+					zoom2 = mapview.zoom;
+					t1 = 0;
+					t2 = f * t2 * Math.log(1+zoom) * time;
+				}
+				
+				if (needzoomin)
+				{
+					zoom3 = zoom;
+					t3 = 0.2 * Math.abs((needzoomout ? bounds.zoom : mapview.zoom) - zoom);
+				}
+				else
+				{
+					zoom2 = zoom;
+					zoom3 = zoom;
+					t3 = 0;
+				}
+				
+				// adjust camroll for the shortest distance to 0
+				mapview.camroll = krpanomaps.functions.adjust360(mapview.camroll, 0);
+				
+				krpanomaps.tween(mapview, {lat:mapview.lat, lng:mapview.lng, zoom:zoom1, camroll:t1 > 0 ? 0 : mapview.camroll}, t1, "smooth", function(){
+					krpanomaps.tween(mapview, {lat:lat, lng:lng, zoom:zoom2, camroll:0}, t2, "smooth", function(){
+						krpanomaps.tween(mapview, {lat:lat, lng:lng, zoom:zoom3}, t3, "smooth", function()
+						{
+							krpano.call(donecallback, plugin);
+						});
+					});
+				});
+			}
+			else
+			{
+				krpanomaps.tween(mapview, {lat:lat, lng:lng, zoom:zoom, camroll:0}, time, tweentype, function()
+				{
+					krpano.call(donecallback, plugin);
+				});
+			}
+
+			// stop the tween on clicking/touching
+			krpanomaps.events.addListener("onmousedown,once", function()
+			{
+				krpanomaps.stoptween(mapview, {lat:0, lng:0, zoom:0, hlookat:0, vlookat:0, fov:0});
+			});
+		}
+		
+		plugin.fitbounds = function(pnts, areascale, time, donecallback)
+		{
+			if (krpanomaps.stagewidth < 1 || krpanomaps.stageheight < 1 || krpanomaps.image.loadstate < 1)
+			{
+				// no layout or size yet, wait...
+				setTimeout( function()
+				{
+					if (plugin && plugin.loaded)	// still there? not unloaded/removed?
+					{
+						plugin.fitbounds(pnts, areascale, 0, donecallback);
+					}
+				},0);
+				
+				return;
+			}
+			
+			var bounds = plugin.getbounds(pnts, areascale);
+			
+			var lat = mapview.lat;
+			var lng = mapview.lng;
+			var zoom = 0;
+		
+			if (bounds && bounds.count > 1)
+			{
+				lat = bounds.centerlat;
+				lng = bounds.centerlng;
+				zoom = bounds.zoom;
+			}
+			
+			if (parseFloat(time) == 0)	// set instant
+			{
+				// stop any current animations
+				krpanomaps.stoptween(mapview, {lat:0, lng:0, zoom:0, hlookat:0, vlookat:0, fov:0});
+			
+				mapview.lng = lng;
+				mapview.lat = lat;
+				mapview.zoom = zoom;
+				
+				krpano.call(donecallback, plugin);
+			}
+			else
+			{
+				// animate
+				plugin.panto(lat, lng, zoom, "auto", time, "smoother", donecallback);
+			}
+		}
+		
+		plugin.maptolayer = function(lat, lng)
+		{
+			return krpanomaps.spheretoscreen(lng_to_ath(lng), lat_to_atv(lat));		// {x,y}
+		}
+		
+		plugin.layertomap = function(x, y)
+		{
+			var p = krpanomaps.screentosphere(x,y);
+			return {lat:atv_to_lat(p.y), lng:ath_to_lng(p.x)};
+		}
+
+		plugin.addlayer = function(name)
+		{
+			var layer = krpanomaps.addlayer(name);
+			layer.keep = true;
+			return layer;
+		}
+		
+		plugin.addhotspot = function(name, ismapspot)
+		{
+			var hs = krpanomaps.addhotspot(name);
+			
+			hs.ismapspot = ismapspot == null ? true : krpano.toBoolean(ismapspot);
+			hs.renderer = "html";
+			hs.camroll = false;
+			hs.keep = true;
+			
+			hs.registerattribute("lat", 0.0, function(lat){ hs.atv = lat_to_atv(lat); }, function(){ return atv_to_lat(hs.atv); });
+			hs.registerattribute("lng", 0.0, function(lng){ hs.ath = lng_to_ath(lng); }, function(){ return ath_to_lng(hs.ath); });
+			
+			// kind a hack - extend the polygonal hotspot <point> object with lat/lng properties
+			var point = hs.point.createItem(0);
+			var point_prototype = Object.getPrototypeOf(point);
+			if (!point_prototype.hasOwnProperty("lat")) Object.defineProperty(point_prototype, "lat", {set:function(v){ this.atv = lat_to_atv(v); }, get:function(){ return atv_to_lat(this.atv); }});
+			if (!point_prototype.hasOwnProperty("lng")) Object.defineProperty(point_prototype, "lng", {set:function(v){ this.ath = lng_to_ath(v); }, get:function(){ return ath_to_lng(this.ath); }});
+			hs.point.removeItem(0);
+			
+			// "mappoints" - set multiple polygonal points as string: "lat,lng,lat,lng,..."
+			hs.registerattribute("mappoints", null, function(s)
+			{
+				var v = (""+s).split(",");
+				var i, cnt = v.length;
+				hs.point.count = 0;
+				if (cnt >= 4)
+				{
+					for (i=0; i < cnt; i+=2)
+					{
+						var p = hs.point.createItem(i >> 1);
+						p.lat = 1*v[i];
+						p.lng = 1*v[i+1];
+					}
+				}
+			},
+			function()
+			{
+				var arr = hs.point.getArray();
+				var s = "";
+				var cnt = arr.length;
+				var i;
+				for (i=0; i < cnt; i++)
+				{
+					var p = arr[i];
+					if (i != 0) s += ",";
+					s += p.lat.toFixed(LATLNG_DP) + "," + p.lng.toFixed(LATLNG_DP);
+				}
+				return s;
+			});
+			
+			// built-in dragging support
+			hs.registerattribute("dragable", false);
+			
+			hs.addevent("ondown", function()
+			{
+				if (hs.dragable && !hs.ispoly)
+				{
+					var hs_screen = krpanomaps.spheretoscreen(hs.ath, hs.atv);
+
+					var offsetx = krpanomaps.mouse.stagex - hs_screen.x;
+					var offsety = krpanomaps.mouse.stagey - hs_screen.y;
+
+					krpanomaps.asyncloop(function()
+					{
+						var pt = krpanomaps.screentosphere(krpanomaps.mouse.stagex - offsetx, krpanomaps.mouse.stagey - offsety);
+						hs.lng = ath_to_lng(pt.x);
+						hs.lat = atv_to_lat(pt.y);
+						
+						// trigger an event
+						hs.triggerevent("ondrag");
+
+						return hs.pressed;	// loop as long the mouse is pressed
+					});
+				}
+			});
+			
+			return hs;
+		}
+	
+		
+		// old plugin API functions (Bingmaps/Googlemaps Plugin compatible)
+		
+		// plugin sub-items / sub-arrays
+		var spotstyleArray = plugin.spotstyle || (plugin.spotstyle = plugin.createarray("spotstyle"));
+		var spotArray      = plugin.spot      || (plugin.spot      = plugin.createarray("spot"));
+		var radar          = plugin.radar     || (plugin.radar     = plugin.createobject("radar"));
+		
+		
+		// settings
+		plugin.registerattribute("activespotenabled", false, function(v){ spotArray.forEach(function(spot){ updateSpotState(spot); }); });
+		
+		
+		// spotstyle
+		
+		function createSpotstyle(spotstylename)
+		{
+			var spotstyle = spotstyleArray.createItem(spotstylename);
+			spotstyle.registerattribute("url", null);
+			spotstyle.registerattribute("overurl", null);
+			spotstyle.registerattribute("activeurl", null);
+			spotstyle.registerattribute("edge", "center");
+			spotstyle.registerattribute("x", 0);
+			spotstyle.registerattribute("y", 0);
+			spotstyle.registerattribute("scale", 1);
+			return spotstyle;
+		}
+		
+		function updateSpotState(spot)
+		{
+			var hs = spot.hs;
+			var spotstyle = spotstyleArray.getItem(spot.spotstyle);
+			if (hs && spotstyle)
+			{
+				if (spotstyle)
+				{
+					hs.url = spot.url ? spot.url 
+						: hs.hovering && (!spot.active || plugin.activespotenabled) && spotstyle.url && spotstyle.overurl ? spotstyle.overurl
+						: spot.active && spotstyle.activeurl ? spotstyle.activeurl
+						: spotstyle.url;
+				}
+					
+				hs.enabled = (spot.active ? plugin.activespotenabled : true) && spot.enabled;
+			}
+		}
+		
+		function applySpotstyle(spot, spotstylename)
+		{
+			var spotstyle = spotstyleArray.getItem(spotstylename);
+		
+			if (spotstyle)
+			{
+				spot.spotstyle = spotstylename;
+				
+				var hs = spot.hs;
+				if (hs)
+				{
+					hs.edge = spotstyle.edge;
+					hs.ox = spotstyle.x;
+					hs.oy = spotstyle.y;
+					hs.scale = spotstyle.scale;
+					
+					updateSpotState(spot);
+				}
+			}
+		}
+		
+		
+		// radar
+		var radar_hs = krpanomaps.addhotspot("radar");
+		radar_hs.setvars({keep:true, renderer:"html", zorder:-1, capturewheel:false});
+		radar_hs.activespot = null;
+		krpano.actions.link(radar_hs, "customhlookat", "event.onviewchange:view.hlookat");
+		krpano.actions.link(radar_hs, "customhfov", "event.onviewchange:view.hfov");
+		radar_hs.oncustomchange = function(){ krpano.view.hlookat = radar_hs.customhlookat; }
+		
+		radar.hs = radar_hs;
+		
+		radar.registerattribute("lat",           0.0,      function(v){ radar_hs.atv = lat_to_atv(v); }, function(){ return atv_to_lat(radar_hs.atv); });
+		radar.registerattribute("lng",           0.0,      function(v){ radar_hs.ath = lng_to_ath(v); }, function(){ return ath_to_lng(radar_hs.ath); });
+		radar.registerattribute("visible",       false,    function(v){ radar_hs.visible       = v; if(v){ radar_hs.url = "%VIEWER%/plugins/radar.js"; } });
+		radar.registerattribute("dragable",      true,     function(v){ radar_hs.enabled       = v; });
+		radar.registerattribute("headingoffset", 90,       function(v){ radar_hs.headingoffset = v + 90; });
+		radar.registerattribute("alpha",         0.5,      function(v){ radar_hs.alpha         = v; });
+		radar.registerattribute("fillcolor",     0xFFFFFF, function(v){ radar_hs.fillcolor     = v; });
+		radar.registerattribute("fillalpha",     1.0,      function(v){ radar_hs.fillalpha     = v; });
+		radar.registerattribute("linewidth",     0.0,      function(v){ radar_hs.linewidth     = v; });
+		radar.registerattribute("linecolor",     0xFFFFFF, function(v){ radar_hs.linecolor     = v; });
+		radar.registerattribute("linealpha",     0.0,      function(v){ radar_hs.linealpha     = v; });
+		radar.registerattribute("size",          100);
+		radar.registerattribute("zoomwithmap",   false);
+		
+		radar_hs.visible = false;	// hide until there is an active spot
+		
+		function update_radar(spot)
+		{
+			if (spot && spot.hs)
+			{
+				radar_hs.visible = radar.visible;
+				radar_hs.ath = spot.hs.ath;
+				radar_hs.atv = spot.hs.atv;
+				radar_hs.heading = spot.heading;
+			}
+			else
+			{
+				radar_hs.visible = false;
+			}
+			
+			radar_hs.activespot = spot;
+		}
+		
+		
+		var last_lat = 0;
+		var last_lng = 0;
+		var last_zoom = 0;
+		
+		krpanomaps.events.addListener("onviewrender", function()
+		{
+			// rader.zoomwithmap
+			var zoomscale = radar.zoomwithmap ? Math.pow(2,mapview.zoom) / 10000.0 : 1.0;
+			radar_hs.scale = krpano.clampNumber((radar.size / 128) * zoomscale, 0, 10);
+
+			// scale hotspots
+			var hotspotworldscale = 1.0 / krpanomaps.display.hotspotworldscale;
+			var fovscale = mapview.fovtoscale(mapview.fov);
+			var hotspots = krpanomaps.hotspot.getArray();
+			var hs, i, cnt = hotspots.length;
+			for (i=0; i < cnt; i++)
+			{
+				hs = hotspots[i];
+				if (hs.zoomlevelbase >= 0)
+				{
+					var scale = mapview.fovtoscale(zoom_to_fov(hs.zoomlevelbase));
+					
+					if (hs.zoomlevelmin >= 0)
+					{
+						var maxscale = mapview.fovtoscale(zoom_to_fov(hs.zoomlevelmin));
+						if (fovscale > maxscale) scale *= fovscale/maxscale;
+					}
+					
+					if (hs.zoomlevelmax >= 0)
+					{
+						var minscale = mapview.fovtoscale(zoom_to_fov(hs.zoomlevelmax));
+						if (fovscale < minscale) scale *= fovscale/minscale;
+					}
+
+					hs.zoomscalebase = scale * hotspotworldscale;
+				}
+			}
+			
+			// onmapmoved
+			var cur_lat = mapview.lat;
+			var cur_lng = mapview.lng;
+			if (last_lat != cur_lat || last_lng != cur_lng)
+			{
+				last_lat = cur_lat;
+				last_lng = cur_lng;
+				plugin.triggerevent("onmapmoved", plugin);
+			}
+			
+			// ommapzoomed
+			var cur_zoom = mapview.zoom;
+			if (last_zoom != cur_zoom)
+			{
+				last_zoom = cur_zoom;
+				plugin.triggerevent("onmapzoomed", plugin);
+			}
+		});
+		
+	
+		plugin.addspotstyle = function(name, url, overurl, activeurl, edge, x, y)
+		{
+			var spotstyle = createSpotstyle(name);
+			spotstyle.url = url;
+			spotstyle.overurl = overurl;
+			spotstyle.activeurl = activeurl;
+			spotstyle.edge = edge;
+			spotstyle.x = x;
+			spotstyle.y = y;
+			return spotstyle;
+		}
+		
+		plugin.activatespot = function(name)
+		{
+			name = (""+name).toLowerCase();	// arrayitem names are always lower case
+			
+			var activespot = null;
+			
+			spotArray.forEach( function(spot)
+			{
+				spot.active = (spot.name == name);
+				
+				if (spot.active)
+					activespot = spot;
+				
+				updateSpotState(spot);
+			});
+			
+			update_radar(activespot);
+		}
+		
+		plugin.addimagespot = function(name, lat, lng, heading, spotstylename, url, onclick, onhover, onover, onout)
+		{
+			var spot = spotArray.createItem(name);
+			
+			var hs = spot.hs;
+			if (!hs)
+			{
+				hs = spot.hs = plugin.addhotspot(spot.name);
+				
+				hs.spot = spot;
+				hs.renderer = "html";
+
+				// spot settings
+				spot.registerattribute("url", null);
+				spot.registerattribute("lat", 0.0, function(lat){ hs.lat = lat; }, function(){ return hs.lat; });
+				spot.registerattribute("lng", 0.0, function(lng){ hs.lng = lng; }, function(){ return hs.lng; });
+				spot.registerattribute("heading", 0.0);
+				
+				// spot settings (new)
+				spot.registerattribute("zoomlevel", null);
+				spot.registerattribute("scale", 1.0, function(v){ hs.scale = v; }, function(){ return hs.scale; });
+				spot.registerattribute("rotate", 0.0, function(v){ hs.rotate = v; }, function(){ return hs.rotate; });
+				spot.registerattribute("active",   false);
+				spot.registerattribute("visible",  true,  function(v){ hs.visible = v; });
+				spot.registerattribute("enabled",  true,  function(v){ hs.enabled = spot.active ? v && plugin.activespotenabled : v; });
+				
+				// spot events
+				hs.addevent("onover", function(){ updateSpotState(spot); krpano.call(spot.onover, spot); });
+				hs.addevent("onhover", function(){ krpano.call(spot.onhover, spot); });
+				hs.addevent("onout", function(){ updateSpotState(spot); krpano.call(spot.onout, spot); });
+				hs.addevent("onclick", function(){ krpano.call(spot.onclick, spot); });
+
+				// spot events (new)
+				hs.addevent("ondown", function(){ krpano.call(spot.ondown, spot); });
+				hs.addevent("onup", function(){ krpano.call(spot.onup, spot); });
+				hs.addevent("onloaded", function(){ krpano.call(spot.onloaded, spot); });
+				hs.addevent("onsingleclick", function(){ krpano.call(spot.onsingleclick, spot); });
+				hs.addevent("ondoubleclick", function(){ krpano.call(spot.ondoubleclick, spot); });
+
+				
+				
+				// spot actions
+				spot.pantospot = function(){ plugin.pantospot(spot.name); };
+				spot.activatespot = function(){ plugin.activatespot(spot.name); };
+			}
+			
+			spot.lat = 1*lat;
+			spot.lng = 1*lng;
+			spot.heading = 1*heading;
+			spot.onclick = onclick;
+			spot.onhover = onhover;
+			spot.onover = onover;
+			spot.onout = onout;
+			
+			// aply the style
+			applySpotstyle(spot, spotstylename || "DEFAULT");
+			
+			if (url)
+				spot.url = url;
+					
+			return spot;
+			
+		}
+		
+		plugin.addspot = function(name, lat, lng, heading, active, onclick, onhover, onover, onout)
+		{
+			var spot = plugin.addimagespot(name, lat, lng, heading, null, null, onclick, onhover, onover, onout);
+
+			if ( krpano.toBoolean(active) )
+				plugin.activatespot(spot.name);
+
+			return spot;
+		}
+		
+		plugin.addstylespot = function(name, lat, lng, heading, spotstylename, active, onclick, onhover, onover, onout)
+		{
+			var spot = plugin.addimagespot(name, lat, lng, heading, spotstylename, null, onclick, onhover, onover, onout);
+			
+			if ( krpano.toBoolean(active) )
+				plugin.activatespot(spot.name);
+				
+			return spot;
+		}
+		
+		plugin.panby = function(dx, dy)
+		{
+			var p1 = krpanomaps.spheretoscreen(mapview.hlookat, mapview.vlookat);
+			var p2 = krpanomaps.screentosphere(p1.x + 1*dx, p1.y + 1*dy);
+			krpanomaps.stoptween(mapview, {lat:0, lng:0});
+			krpanomaps.tween(mapview, {hlookat:p2.x, vlookat:p2.y}, 0.333, "power");
+		}
+		
+		plugin.pantospot = function(spotname, zoomlevel)
+		{
+			var spot = spotArray.getItem(spotname);
+			if (spot)
+			{
+				plugin.panto(spot.lat, spot.lng, zoomlevel != undefined ? zoomlevel : spot.zoomlevel);
+			}
+		}
+		
+		plugin.removeallspots = function()
+		{
+			var cnt = spotArray.count;
+			var i;
+
+			// when removing, always do in reverse order
+			for (i=cnt-1; i >= 0; i--)
+			{
+				var spot = spotArray.getItem(i);
+				
+				if (spot.active)
+				{
+					update_radar(null);
+				}
+				
+				var hs = spot.hs;
+				if (hs)
+				{
+					hs.remove();
+					spot.hs = null;
+				}
+				
+				spotArray.removeItem(i);
+			}
+		}
+		
+		plugin.removespot = function(name)
+		{
+			var spot = spotArray.getItem(name);
+				
+			if (spot)
+			{
+				if (spot.active)
+				{
+					update_radar(null);
+				}
+				
+				var hs = spot.hs;
+				if (hs)
+				{
+					hs.remove();
+					spot.hs = null;
+				}
+				
+				spotArray.removeItem(name);
+			}
+		}
+		
+		plugin.setcenter = function(lat, lng, zoom)
+		{
+			krpanomaps.stoptween(mapview, {hlookat:0, vlookat:0, lat:0, lng:0});
+			mapview.lat = 1*lat;
+			mapview.lng = 1*lng;
+			
+			if( zoom != null && !isNaN(zoom) )
+			{
+				plugin.setzoom(zoom);
+			}
+		}
+		
+		plugin.setmaptype = function(maptype)
+		{
+			// not supported
+		}
+		
+		plugin.setzoom = function(zoom)
+		{
+			krpanomaps.stoptween(mapview, {zoom:0, fov:0});
+			mapview.zoom = 1*zoom;
+		}
+		
+		plugin.zoomin = function(lat, lng, center)
+		{
+			var nextzoom = Math.ceil(mapview.zoom) + 1;
+						
+			if (krpano.toBoolean(center) && !isNaN(1*lat) && !isNaN(1*lng))
+			{
+				krpanomaps.stoptween(mapview, {hlookat:0, vlookat:0});
+				krpanomaps.tween(mapview, {lat:1*lat, lng:1*lng}, 0.5);
+			}
+			
+			krpanomaps.stoptween(mapview, {fov:0});
+			krpanomaps.tween(mapview, {zoom:nextzoom}, 0.5);
+		}
+		
+		plugin.zoomout = function(lat, lng)
+		{
+			var nextzoom = Math.floor(mapview.zoom) - 1;
+			
+			if (!isNaN(1*lat) && !isNaN(1*lng))
+			{
+				krpanomaps.stoptween(mapview, {hlookat:0, vlookat:0});
+				krpanomaps.tween(mapview, {lat:1*lat, lng:1*lng}, 0.5);
+			}
+			
+			krpanomaps.stoptween(mapview, {fov:0});
+			krpanomaps.tween(mapview, {zoom:nextzoom}, 0.5);
+		}
+		
+		plugin.zoomto = function(zoomlevel)
+		{
+			krpanomaps.stoptween(mapview, {fov:0});
+			krpanomaps.tween(mapview, {zoom:1*zoomlevel}, 0.5);
+		}
+		
+		plugin.zoomtospotsextent = function(areascale)
+		{
+			plugin.fitbounds(null, areascale);
+		}
+		
+		
+		// some default controls
+	
+		var buttons = krpanomaps.addlayer("buttons");
+		buttons.setvars({keep:true, align:"rightbottom", x:10, y:30, type:"container", flowchildren:"v", childflowspacing:10});
+		
+		var buttonstyle = {
+			keep:true, type:"text", textalign:"center", parent:buttons.name,
+			align:"rightbottom", width:28, height:28, 
+			css:"font-size:15px; color:#333333;", bgalpha:1.0, bgcolor:0xFFFFFF, bgborder:"1 0xFFFFFF 0.5", bgroundedge:1, bgshadow:"0 1 3 0x000000 1.0",
+			ondown:"bgcolor=0xDDDDDD;", onup:"bgcolor=0xFFFFFF;"
+		};
+		
+		var buttons_geoloc = null;
+		if ("geolocation" in navigator)
+		{
+			buttons_geoloc = krpanomaps.addlayer("geoloc");
+			buttons_geoloc.setvars(buttonstyle);
+			buttons_geoloc.text = krpano.get("data[krpanomaps_button_zoompos].content");
+			buttons_geoloc.onclick = function()
+			{
+				navigator.geolocation.getCurrentPosition(function(position)
+				{
+					var lat = position.coords.latitude;
+					var lng = position.coords.longitude;
+					var heading = position.coords.heading;
+
+					plugin.panto(lat, lng, 17);
+
+					var hs = plugin.addhotspot("home", false);
+					hs.setvars({type:"text", renderer:"html", width:32, height:32, bg:false});
+					hs.lat = lat;
+					hs.lng = lng;
+					hs.text = krpano.get("data[krpanomaps_button_zoompos].content");
+					hs.onclick = "tween(alpha,0,0.2,default,remove())";
+				},
+				function(err)
+				{
+					var l = krpanomaps.addlayer();
+					l.setvars({type:"text", align:"center", bg:false, enabled:false, css:"text-align:center; font-size:20px; font-weight:bold; color:red;"});
+					l.text = "Geolocation Error:[br]"+err.message;
+					l.onloaded = "delayedcall(2,tween(alpha,0.0,1.0,default,removelayer(get(name))));"
+				});
+			}
+		}
+		
+		var buttons_zoomin = krpanomaps.addlayer("zoomin");
+		buttons_zoomin.setvars(buttonstyle);
+		buttons_zoomin.text = krpano.get("data[krpanomaps_button_zoomin].content");
+		buttons_zoomin.onclick = function(){ plugin.zoomin(); };
+		
+		var buttons_zoomout = krpanomaps.addlayer("zoomout");
+		buttons_zoomout.setvars(buttonstyle);
+		buttons_zoomout.text = krpano.get("data[krpanomaps_button_zoomout].content");
+		buttons_zoomout.onclick = function(){ plugin.zoomout(); };
+		
+		var buttons_zoomarea = krpanomaps.addlayer("zoomarea");
+		buttons_zoomarea.setvars(buttonstyle);
+		buttons_zoomarea.text = krpano.get("data[krpanomaps_button_zoomarea].content");
+		buttons_zoomarea.onclick = function(){ plugin.fitbounds(null, null); };
+
+		var posinfo = krpanomaps.addlayer("posinfo");
+		posinfo.setvars({keep:true, type:"text", selectable:true, tabindex:1, align:"leftbottom", x:1, y:1, css:"font-size:10px;", bgcolor:0xFFFFFF, bgalpha:0.8, bgroundedge:"0 3 0 0", bgborder:"1 0xFFFFFF 0.8"});
+		posinfo.template = "Lat:{{view.vlookat:roundval(view.lat,6)}} Lng:{{view.hlookat:roundval(view.lng,6)}} Zoom:{{view.fov:roundval(view.zoom,1)}}";
+		
+		var mapshadow = krpanomaps.addlayer("mapshadow");
+		mapshadow.setvars({keep:true, type:"container", enabled:false, width:"100%", height:"100%", zorder:99});
+		mapshadow.bgshadow = "0 0 9 0 0x000000 0.3 inset";
+		
+		var maptype_select = null;
+		
+		function maptype_addcontrol()
+		{
+			if ( !krpanomaps.addcomboboxlayer )
+			{
+				krpanomaps.actions.includexml("%VIEWER%/plugins/combobox.xml", maptype_addcontrol);
+				return;
+			}
+			
+			maptype_select = krpanomaps.addcomboboxlayer("auto");
+			maptype_select.setvars({keep:true, align:"lefttop", x:10, y:10, height:28});
+					
+			tileproviders.forEach( function(tileprovider)
+			{
+				maptype_select.addnameditem(tileprovider.name, tileprovider.description, function(){ plugin.tileprovider = tileprovider.name; });
+			});
+			
+			maptype_select.selectitembyname(plugin.tileprovider);
+			
+			maptype_select.onnewpano_event = krpanomaps.events.addListener("onnewpano", function()
+			{
+				if (maptype_select)
+				{
+					maptype_select.selectitembyname(plugin.tileprovider);
+				}
+			});
+		}
+		
+		plugin.registerattribute("controls", "zoom|zoomarea|geolocation|location|maptype", function(controls)
+		{
+			controls = (""+controls).toLowerCase().split("|");
+			
+			buttons_zoomin.visible = buttons_zoomout.visible = controls.indexOf("zoom") >= 0;
+			buttons_zoomarea.visible = controls.indexOf("zoomarea") >= 0;
+			if (buttons_geoloc) buttons_geoloc.visible = controls.indexOf("geolocation") >= 0;
+			posinfo.visible = controls.indexOf("location") >= 0;
+			mapshadow.visible = controls.indexOf("mapshadow") >= 0;
+			
+			if ( controls.indexOf("maptype") >= 0 )
+			{
+				if (maptype_select == null)
+				{
+					maptype_addcontrol();
+				}
+			}
+			else
+			{
+				if (maptype_select)
+				{
+					if (maptype_select.onnewpano_event)
+					{
+						krpanomaps.events.removeListener("onnewpano", maptype_select.onnewpano_event);
+						maptype_select.onnewpano_event = null;
+					}
+					
+					maptype_select.remove();
+					maptype_select = null;
+				}
+			}
+		});
+		
+		
+		// create the default style for the mapspots
+		{
+			function svgToDataUrl(svg)
+			{
+				return "data:image/svg+xml;base64," + btoa(svg);
+			}
+			
+			var defaultstyle = spotstyleArray.getItem("DEFAULT");
+			if (!defaultstyle)
+			{
+				defaultstyle = plugin.addspotstyle("DEFAULT",
+					svgToDataUrl( krpano.get("data[krpanomaps_mapspot_normal].content") ), 
+					svgToDataUrl( krpano.get("data[krpanomaps_mapspot_hover].content") ), 
+					svgToDataUrl( krpano.get("data[krpanomaps_mapspot_active].content") ), 
+					"0.5|0.875",
+					0, 0);
+			}
+		}
+		
+		// create the user spotstyles
+		spotstyleArray.forEach( function(spotstyle)
+		{
+			createSpotstyle(spotstyle.name);
+		});
+		
+		// create the user spots
+		spotArray.forEach( function(spot)
+		{
+			var spot = plugin.addimagespot(spot.name, spot.lat, spot.lng, spot.heading, spot.spotstyle, spot.url, spot.onclick, spot.onhover, spot.onover, spot.onout);
+
+			if ( krpano.toBoolean(spot.active) )
+				plugin.activatespot(spot.name);
+		});
+		
+		
+		// all is done, the map is ready for usage
+		plugin.triggerevent("onmapready");
+		
+		
+	]]></action>
+	
+</krpano>

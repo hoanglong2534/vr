@@ -1,0 +1,684 @@
+<krpano>
+
+	<!--
+		combobox.xml
+		krpano 1.23
+		
+		https://krpano.com/plugins/combobox/
+
+		Combobox Plugin
+		- This plugin converts <combobox> elements in the current xml
+		  into <layer> container, scrollarea and textfield elements.
+		- Additionally it's also possible to add and remove combobox
+		  elements also dynamically.
+		- The full xml implementation allows many ways of customizing
+		  for own needs - custom designs/styles, custom functionality.
+
+
+		Syntax for Static XML Code:
+
+			<combobox name="..." design="..." ...any layer settings...>
+				<item name="..." caption="..." onclick="..." />
+				<item name="..." caption="..." onclick="..." />
+			</combobox>
+			
+			or using <layer> with style="combobox":
+			
+			<layer combobox name="..." style="combobox" design="..." ...any layer settings...>
+				<item name="..." caption="..." onclick="..." />
+				<item name="..." caption="..." onclick="..." />
+			</layer>
+
+		Syntax for Dynamic XML Code:
+
+		 - Global Actions:
+
+			addcomboboxlayer(cbname, design*)
+			removecomboboxlayer(cbname);
+
+		 - Combobox Layer Actions:
+
+			layer[cbname].additem(caption, onclick)
+			layer[cbname].addnameditem(name, caption, onclick)
+			layer[cbname].addiditem(name, caption, onclick);       same as addnameditem (for combobox.js compatibility)
+			layer[cbname].selectitem(caption)
+			layer[cbname].selectitembyname(name_or_index)
+			layer[cbname].selectiditem(name_or_index)              same as selectitembyname (for combobox.js compatibility)
+			layer[cbname].removeall()
+			layer[cbname].openlist()
+			layer[cbname].closelist()
+
+		 - Events/Callbacks:
+
+			layer[cbname].onchange
+
+		- Combobox Layer Attributes:
+
+			layer[cbname].item              - krpano Array of the items
+			layer[cbname].selecteditemindex - current selected item index
+	-->
+
+	<style name="combobox" type="container" oncreate="combobox_oncreate(get(name), get(design));" />
+
+	<!-- core internal layer styles -->
+	<style name="combobox_container_style" type="container" maskchildren="true" bgcapture="true" visible="false" alpha="1.0" />
+	<style name="combobox_marker_style" type="text" align="righttop" edge="center" html="▼" alpha="1.0" />
+	<style name="combobox_item_style" type="text" wordwrap="false" vcenter="true" align="lefttop" onover="if(!combbox_item_pressed,onoveritem());asyncloop(hovering,,if(!combbox_item_pressed,onoutitem()));" ondown="onoveritem(); set(combbox_item_pressed,true);" onup="onoutitem(); set(combbox_item_pressed,false);" onoveritem="set(bg,true);" onoutitem="set(bg,false);" alpha="1.0" />
+
+	<!-- several pre-defined designs -->
+	<combobox_design name="default" margin="2" open_close_speed="0.25">
+		<!-- default design - white box with black text and blue selection -->
+		<style name="combobox_container_style" bgalpha="1.0" bgcolor="0xFFFFFF" bgborder="1 0xFFFFFF 0.5" bgroundedge="1" bgshadow="0 1 3 0x000000 1.0" />
+		<style name="combobox_marker_style" css="color:#FFFFFF;" bg="false" txtshadow="0 0 2 0x000000 1" />
+		<style name="combobox_item_style" css="color:#222222;" padding="4 4" bg="false" bgcolor="0xC7E4FC" bgalpha="1.0" bgroundedge="1" txtshadow="0 0 1 0xFFFFFF 1.0" />
+	</combobox_design>
+
+	<combobox_design name="vtour" margin="4" open_close_speed="0.25">
+		<!-- default vtourskin.xml design -->
+		<style name="combobox_container_style" bgalpha="0.8" bgcolor="0x2D3E50" bgborder="0" bgroundedge="1" bgshadow="0 4 10 0x000000 0.3" />
+		<style name="combobox_marker_style" css="color:#FFFFFF;" bg="false" txtshadow="0 0 2 0x000000 1" />
+		<style name="combobox_item_style" css="color:#FFFFFF;" padding="4 4" bg="false" bgcolor="0xFFFFFF" bgalpha="0.5" bgroundedge="0" txtshadow="0 0 2 0x000000 1" />
+	</combobox_design>
+
+	<combobox_design name="editor" margin="2" open_close_speed="0.25">
+		<style name="combobox_container_style" bgalpha="1.0" bgcolor="0xFFFFFF" bgborder="1 0xCCCCCC 1" bgroundedge="1" />
+		<style name="combobox_marker_style" css="color:#FFFFFF;" bg="false" txtshadow="0 0 2 0x000000 1" />
+		<style name="combobox_item_style" css="color:#222222;" padding="4 4" bg="false" bgcolor="0xC7E4FC" bgalpha="1.0" bgroundedge="1" txtshadow="0 0 1 0xFFFFFF 1.0" />
+	</combobox_design>
+	
+
+	<action autorun="preinit" type="Javascript"><![CDATA[
+	
+	<!-- remove the action itself after it has been called -->
+	krpano.action.removeItem(args[0]);
+	
+	if (krpano.build < "2024-01-01")
+	{
+		krpano.actions.error('combobox.xml - too old krpano version (min 1.22)!');
+		return;
+	}
+	
+	<!-- base events -->
+	krpano.events.addListener("onxmlcomplete", combobox_parse_xml_elements);
+	krpano.events.addListener("onresize", combobox_closelist);
+
+
+	<!-- convert all <combobox> xml elements to layers -->
+	function combobox_parse_xml_elements()
+	{
+		var combobox_elements = krpano.combobox;
+		
+		if (combobox_elements && combobox_elements.isArray)
+		{
+			delete krpano.combobox;
+		
+			var combobox_array = combobox_elements.getArray();
+		
+			combobox_array.forEach( function(cb_xml)
+			{
+				var cb_layer = addcomboboxlayer(cb_xml.name, cb_xml.design);
+				krpano.copyattributes(cb_layer, cb_xml);
+				cb_layer.keep = true;
+					
+				var item_array =  cb_xml.item && cb_xml.item.isArray ?  cb_xml.item.getArray() : [];
+				item_array.forEach( function(item)
+				{
+					combobox_additem(cb_layer.name, item.name, item.caption, item.onclick, item.oninit);
+				});
+			});
+		}
+	}
+	
+	function combobox_oncreate(cbname, design)
+	{
+		var cb_layer = addcomboboxlayer(cbname, design);
+			
+		var item_array =  cb_layer.item && cb_layer.item.isArray ?  cb_layer.item.getArray() : [];
+		item_array.forEach( function(item)
+		{
+			combobox_additem(cb_layer.name, item.name, item.caption, item.onclick, item.oninit);
+		});
+	}
+
+	function addcomboboxlayer(cbname, design)
+	{
+		<!-- create the layer -->
+		var cb = krpano.addlayer(cbname);
+		cb.keep = true;
+		cb.maxopenheight = 1000;
+		
+		<!-- get the actual name (if auto-naming was used)-->
+		cbname = cb.name;
+		
+		<!-- copy the design settings (or set defaults) -->
+		if (!krpano.combobox_design)
+		{
+			krpano.trace(3,"Missing &lt;combobox_design&gt; element!");
+			return;
+		}
+		
+		var design_element = krpano.combobox_design.getItem(design);
+		if (design_element == null)
+		{
+			design_element = krpano.combobox_design.getItem("default");
+			if (!design_element)
+			{
+				krpano.trace(3,"Missing &lt;combobox_design&gt; default element!");
+				return;
+			}
+		}
+			
+		cb.cbdesign = design_element;
+		cb.margin = Number(design_element.margin);
+		cb.open_close_speed = Number(design_element.open_close_speed);
+		
+		<!-- load the styles and copy the design style settings -->
+		cb.loadstyle("combobox_container_style");
+		cb.addevent("onclick", function(){ combobox_openlist(cb.name); });
+		krpano.copyattributes(cb, design_element.style.getItem("combobox_container_style"));
+
+		<!-- add/build/map actions -->
+		cb.additem = function(caption,onclick)
+		{
+			combobox_additem(cbname, null, caption, onclick);
+		}
+		
+		cb.addnameditem = cb.addiditem = function(itemname,caption,onclick)
+		{
+			combobox_additem(cbname, itemname, caption, onclick); 
+		}
+		
+		cb.selectitem = function(caption)
+		{
+			var i = combobox_finditem(cbname,caption);
+			if (i >= 0)
+			{
+				combobox_selectitem(cbname, i);
+			}
+		}
+		
+		cb.selectitembyname = cb.selectiditem = function(itemname)
+		{
+			combobox_selectitem(cbname, itemname);
+		}
+
+		cb.removeall = function()
+		{
+			combobox_removeitems(cbname);
+		}
+		
+		cb.openlist = function()
+		{
+			combobox_openlist(cbname);
+		}
+		
+		cb.closelist = function()
+		{
+			combobox_closelist(cbname);
+		}
+
+		<!-- create sub-layers -->
+		var saname = 'combobox_' + cbname + '_scrollarea';
+		var sa = krpano.addlayer(saname);
+		sa.parent = cbname;
+		sa.keep = true;
+		sa.align = 'lefttop';
+		sa.type = 'scrollarea';
+		sa.direction = 'v';
+		sa.enabled = false;
+		sa.width = "100%";
+		sa.height = "100%";
+		cb.scrollarea = sa;
+
+		var mkname = 'combobox_' + cbname + '_marker';
+		var mk = krpano.addlayer(mkname);
+		mk.parent = saname;
+		mk.keep = true;
+		mk.loadstyle("combobox_marker_style");
+		krpano.copyattributes(mk, design_element.style.getItem("combobox_marker_style"));
+		mk.havemarkersize = false;
+		mk.onresize = function(){ mk.havemarkersize=true; };
+		cb.marker = mk;
+
+		<!-- item data array -->
+		cb.createarray('item');
+
+		<!-- item autosizing information -->
+		cb.autosize_cnt = 0;
+		cb.autosize_max_w = 0;
+		cb.autosize_max_h = 0;
+
+		cb.lastselecteditemindex = 0;
+		cb.selecteditemindex = 0;
+		
+		return cb;
+	}
+
+	<!-- dynamically remove a combobox element -->
+	function removecomboboxlayer(cbname)
+	{
+		var cb = krpano.layer.getItem(cbname);
+		
+		if (cb === krpano.openedcombobox)
+		{
+			delete krpano.openedcombobox;
+		}
+		
+		if (cb)
+		{
+			krpano.removelayer(cbname, true);
+		}
+	}
+
+	<!-- dynamically add items -->
+	function combobox_additem(cbname, itemname, itemcaption, itemonclick, itemoninit)
+	{
+		var cb = krpano.layer.getItem(cbname);
+		if (!cb)
+		{
+			return;
+		}
+	
+		<!-- when no item name is set, generate an automatic one -->
+		if (itemname == null || itemname == "null" || itemname == "")
+			itemname = 'autoname_' + cb.item.count;
+	
+		<!-- save the item caption and onclick event -->
+		var cbitem = cb.item.createItem(itemname);
+		cbitem.caption = itemcaption;
+		cbitem.onclick = itemonclick;
+
+		cb.autosize_cnt++;
+
+		<!-- create the item layer/textfield -->
+		var itemlayername = 'comboboxitem_' + cbname + '_' + itemname;
+		var li = krpano.addlayer(itemlayername);
+		li.loadstyle("combobox_item_style");
+		krpano.copyattributes(li, cb.cbdesign.style.getItem("combobox_item_style"));
+		li.parent = cb.scrollarea.name;
+		li.keep = true;
+		li.cblayername = cb.name;
+		li.itemname = itemname;
+		li.text = itemcaption;
+		li.onresize = function()
+		{
+			cb.autosize_max_w = Math.max(cb.autosize_max_w, Number(li.width));
+			cb.autosize_max_h = Math.max(cb.autosize_max_h, Number(li.height));
+			
+			krpano.delayedcall(cb.name + '_combobox_align_items', 0.01, function(){ combobox_align_items(cb.name); });
+		}
+		li.onclick = combobox_item_onclick.bind(li);
+		if (itemoninit)
+		{
+			krpano.callwith(li, itemoninit);
+		}
+
+		cbitem.itemlayername = itemlayername;
+		cbitem.itemlayer = li;
+	}
+	
+	
+	<!-- default onclick event for items: select the current item, close the list and call the item onclick event -->
+	function combobox_item_onclick()
+	{
+		var caller = krpano.actions.actioncaller || this;
+		
+		var cb = krpano.layer.getItem(caller.cblayername);
+		var itemname = caller.itemname;
+		
+		combobox_selectitem(cb.name, itemname);
+
+		if (krpano.openedcombobox === cb)
+		{
+			combobox_closelist();
+		}
+
+		var cbitem = cb.item.getItem(itemname);
+		if (cbitem && cbitem.onclick)
+		{
+			if (cb.callonclickafterclose === false)
+			{
+				<!-- call instantly -->
+				krpano.callwith(cb, cbitem.onclick);
+			}
+			else
+			{
+				<!-- call the onclick event after the combobox has closed -->
+				krpano.delayedcall(cb.open_close_speed, function()
+				{
+					cb.curitem = cbitem;
+					krpano.callwith(cb, cbitem.onclick);
+				});
+			}
+		}
+	}
+	
+	
+	<!-- select an item -->
+	function combobox_selectitem(cbname, itemname)
+	{
+		if (krpano.combbox_item_pressed != true)
+		{
+			var cb = krpano.layer.getItem(cbname);
+			cb.lastselecteditemindex = cb.selecteditemindex;
+			
+			var cbitem = cb.selecteditemindex = cb.item.getItem(itemname);
+			cb.selecteditemindex = cbitem ? cbitem.index : -1;
+			
+			<!-- call onchange event on selection change -->
+			if (cb.lastselecteditemindex != cb.selecteditemindex && cb.onchange)
+			{
+				krpano.callwith(cb, cb.onchange);
+			}
+			
+			if (krpano.openedcombobox === cb)
+			{
+				<!-- when opened, just close to the selected item -->
+				combobox_closelist();
+			}
+			else
+			{
+				if (cb.scrollarea.loaded && cb.autosize_max_h > 0)
+				{
+					cb.scrollarea.stopscrolling();
+					var offset = cb.selecteditemindex * (cb.autosize_max_h + cb.margin);
+					krpano.tween(cb.marker, {y:(cb.margin + offset + cb.autosize_max_h/2)}, 0);
+					krpano.tween(cb.scrollarea, {y:-offset}, 0, "default", function(){ cb.scrollarea.update(); });
+				}
+			}
+		}
+	}
+
+	<!-- close the current open list -->
+	function combobox_closelist()
+	{
+		var cb = krpano.openedcombobox;
+		if (cb)
+		{
+			delete krpano.openedcombobox;
+		
+			<!-- restore zorder -->
+			cb.zorder = cb.backupzorder;
+		
+			<!-- clear the global onmousedown event -->
+			krpano.events.removeListener("onmousedown", combobox_closelist);
+
+			<!-- disable the dragging -->
+			cb.scrollarea.enabled = false;
+
+			<!-- closing animations -->
+			var offset = cb.selecteditemindex*(cb.autosize_max_h + cb.margin);
+			if (cb.ybackup != null)
+			{
+				krpano.tween(cb, {y:cb.ybackup}, cb.open_close_speed);
+			}
+			cb.scrollarea.stopscrolling();
+			
+			var tweentype = "default";
+			krpano.tween(cb, {height:(2*cb.margin + cb.autosize_max_h)}, cb.open_close_speed, tweentype, function()
+			{
+				<!-- restore flow layout -->
+				if (cb.backupflow)
+				{
+					cb.flow = true;
+					delete cb.backupflow;
+				}
+			});
+			krpano.tween(cb.scrollarea, {y:(-offset)}, cb.open_close_speed, tweentype, function(){ cb.scrollarea.update(); });
+			krpano.tween(cb.marker, {y:(cb.margin + offset + cb.autosize_max_h/2), rotate:0}, cb.open_close_speed, tweentype);
+		}
+	}
+
+	<!-- align the image and set the combobox size -->
+	function combobox_align_items(cbname)
+	{
+		var cb = krpano.layer.getItem(cbname);
+		
+		if (cb.marker.havemarkersize == false || cb.scrollarea.loaded == false)
+		{
+			<!-- wait until everything is ready -->
+			krpano.delayedcall(cb.name + '_waitformarkersize', 0.01, function(){ combobox_align_items(cb.name); });
+		}
+		else
+		{
+			<!-- set the item positions and the combobox size -->
+			if (krpano.openedcombobox === cb)
+				combobox_closelist();
+	
+			var sa = cb.scrollarea;
+			var itemwidth = cb.margin > 0 ? -2 * cb.margin : '100%';
+			var mk_w = Number(cb.marker.width);
+			var item_cnt = cb.autosize_cnt;
+			
+			for(var item_i=0; item_i < item_cnt; item_i++)
+			{
+				var li = cb.item.getItem(item_i).itemlayer;
+				li.x = cb.margin;
+				li.width = itemwidth;
+				li.height = cb.autosize_max_h;
+				li.y = cb.margin + item_i * (cb.autosize_max_h + cb.margin);
+			}
+
+			if (cb.width == null || cb.width == cb.lastautosizedwidth)
+			{
+				if ( !isNaN(cb.autosize_max_w) )
+				{
+					<!-- no combobox width (or an autosized width) set - set the largest item width -->
+					cb.width = cb.margin + cb.autosize_max_w + (mk_w > 0 ? 2 + mk_w : 0) + cb.margin;
+					cb.lastautosizedwidth = cb.width;
+				}
+				
+			}
+			cb.height = 2*cb.margin + cb.autosize_max_h;
+			sa.height = cb.margin + item_cnt*(cb.margin + cb.autosize_max_h);
+			sa.y = -(cb.selecteditemindex * (cb.autosize_max_h + cb.margin));
+			cb.marker.x = cb.margin + mk_w/2;
+			krpano.tween(cb.marker, {y:(cb.margin + cb.selecteditemindex*(cb.autosize_max_h + cb.margin) + cb.autosize_max_h/2)}, 0.1);
+			
+			
+			<!-- when all is done, show the combobox -->
+			krpano.delayedcall(0.1, function(){ cb.visible=true; });
+		}
+	}
+	
+	
+	<!-- open the combobox list -->
+	function combobox_openlist(cbname)
+	{
+		<!-- if another combobox is already open, close that one first -->
+		if (krpano.openedcombobox != null)
+		{
+			combobox_closelist();
+		}
+
+		var cb = krpano.layer.getItem(cbname);
+		if (!cb)
+			return;
+			
+		krpano.openedcombobox = cb;
+		
+		<!-- move to top -->
+		cb.backupzorder = cb.zorder;
+		cb.zorder = 999999;
+		
+		<!-- disable flow layout -->
+		if (cb.flow)
+		{
+			cb.backupflow = true;
+			cb.flow = false;
+		}
+
+		<!-- find the available screen space above or below the combobox -->
+		var cbheight = 2*cb.margin + cb.autosize_max_h;
+		var lx1 = 0;
+		var ly1 = 0;
+		var lx2 = cb.pixelwidth;
+		var ly2 = cbheight;
+		
+		var p1 = krpano.actions.layertoscreen(cbname, lx1,ly1);
+		lx1 = p1.x;
+		ly1 = p1.y;
+		var p2 = krpano.actions.layertoscreen(cbname, lx2,ly2);
+		lx2 = p2.x;
+		ly2 = p2.y;
+		
+		var space_above = ly1 - krpano.area.pixely;
+		var space_below = krpano.area.pixelheight - (ly2 - krpano.area.pixely);
+
+		<!-- the required space for full opening: -->
+		var openheight = cb.margin + cb.autosize_cnt*(cb.margin + cb.autosize_max_h);
+		
+		<!-- vertical centered alignment? -->
+		var cb_edge = cb.edge ? cb.edge : cb.align;
+		var iscentered = cb_edge == 'left' || cb_edge == 'center' || cb_edge == 'right';
+		var openheight_max;
+		if (iscentered)
+			openheight_max = space_above + space_below;
+		else
+			openheight_max = Math.max(space_above, space_below);
+	
+		<!-- limit the height to the available space (minus some margin) -->
+		var openheight = Math.min(openheight, (openheight_max + cbheight - 20));
+		
+		if (openheight < 0)	openheight = 0;
+		else if (openheight > cb.maxopenheight)
+			openheight = cb.maxopenheight;
+		
+		<!-- need vertical offset? (depending on the available space and the align/edge setting) -->
+		var yoffset = null;
+		var top_overflow = -ly1 + krpano.area.pixely + openheight/2;
+		var bottom_overflow = ly2 - krpano.area.pixely + openheight/2 - krpano.area.pixelheight;
+		
+		if (cb.parentobject && cb.parentobject.autoheight == false)
+		{
+			<!-- no vertical offset inside other layers, do only a height clipping -->
+			var is_at_bottom = cb_edge.indexOf("bottom") >= 0;
+			var max_overflow = Math.max(is_at_bottom ? top_overflow : 0, is_at_bottom ? 0 : bottom_overflow, 0);
+			
+			openheight -= max_overflow;
+		}
+		else
+		{
+			if (iscentered)
+			{
+				if (openheight > (krpano.area.pixelheight - 20))
+				{
+					yoffset = 0;
+				}
+				else
+				{
+					if (top_overflow > 0) yoffset = Number(cb.y) + top_overflow;
+					if (bottom_overflow > 0) yoffset = Number(cb.y) - bottom_overflow;
+				}
+			}
+			else
+			{
+				var isbottomalign = cb_edge.indexOf('bottom');
+				if (space_above > space_below)
+				{
+					if (isbottomalign < 0) yoffset = Number(cb.y) - openheight + cbheight;
+				}
+				else
+				{
+					if (isbottomalign >= 0) yoffset = Number(cb.y) - openheight + cbheight;
+				}
+			}
+		}
+		
+		if (yoffset != null)
+		{
+			cb.ybackup = cb.y;
+			krpano.tween(cb, {y:yoffset}, cb.open_close_speed);
+		}
+
+		<!-- center the opened list at the selected item -->
+		var centeritem_y;
+		if (cb_edge.indexOf('top') >= 0)
+		{
+			centeritem_y = -1 * (cb.margin + cb.selecteditemindex*(cb.margin + cb.autosize_max_h) - cb.margin);
+			centeritem_y = krpano.clampNumber(centeritem_y, openheight - Number(cb.scrollarea.height), 0);
+		}
+		else if ( cb_edge.indexOf('bottom') >= 0 )
+		{
+			centeritem_y = -1 * (cb.margin + cb.selecteditemindex*(cb.margin + cb.autosize_max_h) + cb.autosize_max_h - openheight + cb.margin);
+			centeritem_y = krpano.clampNumber(centeritem_y, openheight - Number(cb.scrollarea.height), 0);
+		}
+		else
+		{
+			centeritem_y = -1 * (cb.margin + cb.selecteditemindex*(cb.margin + cb.autosize_max_h) + cb.autosize_max_h/2 - openheight/2);
+			centeritem_y = krpano.clampNumber(centeritem_y, openheight - Number(cb.scrollarea.height), 0);
+		}
+
+		<!-- apply the changes now -->
+		krpano.tween(cb, {height:openheight}, cb.open_close_speed);
+		krpano.tween(cb.scrollarea, {y:centeritem_y}, cb.open_close_speed, "default", function(){ cb.scrollarea.update(); });
+
+		krpano.tween(cb.marker, {rotate:90}, cb.open_close_speed);
+		
+		<!-- enable the scrollarea to allow the user to drag it -->
+		cb.scrollarea.enabled = true;
+
+		<!-- install a global onmousedown event to close the list when clicking at the pano -->
+		krpano.events.addListener("onmousedown", combobox_closelist);
+	}
+	
+	<!-- find an item by its caption, the global variable defined in 'returnvariable' will contain the index  -->
+	function combobox_finditem(cbname, itemcaption)
+	{
+		var cb = krpano.layer.getItem(cbname);
+		var ret = -1;
+		
+		for (var i=0; i < cb.item.count; i++)
+		{
+			if (cb.item.getItem(i).caption == itemcaption)
+			{
+				ret = i;
+				break;
+			}
+		}
+		
+		return ret;
+	}
+	
+	
+	<!-- remove all items (to be able to add new ones) -->
+	function combobox_removeitems(cbname)
+	{
+		var cb = krpano.layer.getItem(cbname);
+		if (krpano.openedcombobox === cb)
+			combobox_closelist();
+
+		<!-- remove all item layers -->
+		var i = cb.item.count - 1;
+		while(i >= 0)
+		{
+			cb.item.getItem(i).itemlayer.remove();
+			i--;
+		}
+
+		<!-- reset the item information -->
+		cb.item.count = 0;
+		cb.autosize_cnt = 0;
+		cb.autosize_max_w = 0;
+		cb.autosize_max_h = 0;
+		cb.selecteditemindex = 0;
+		cb.lastselecteditemindex = 0;
+		if (cb.width == cb.lastautosizedwidth)
+			cb.width = null;
+	}
+	
+	// export the API functions
+	krpano.combobox_oncreate = combobox_oncreate;
+	
+	krpano.addcomboboxlayer = addcomboboxlayer;
+	krpano.removecomboboxlayer = removecomboboxlayer;
+		
+	krpano.combobox_additem = combobox_additem;
+	krpano.combobox_selectitem = combobox_selectitem;
+	krpano.combobox_removeitems = combobox_removeitems;
+	krpano.combobox_openlist  = combobox_openlist;
+	krpano.combobox_closelist  = combobox_closelist;
+
+	]]></action>
+
+</krpano>
