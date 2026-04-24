@@ -6,7 +6,7 @@
 
 
 ```bash
-docker compose up -d --build
+docker compose up -d
 ```
 Truy cập: **`http://localhost:8080`**
 
