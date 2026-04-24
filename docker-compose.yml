@@ -1,10 +1,7 @@
 services:
   vr-tour:
-    build: .
     image: hoanglong2534/vr-tour:latest
     container_name: ptit-vr-tour
     ports:
       - "8080:80"
-    volumes:
-      - .:/usr/share/nginx/html
     restart: unless-stopped
