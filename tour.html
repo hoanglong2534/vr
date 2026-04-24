@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>krpano - GPBK2287_1773201421340</title>
+	<title>PTIT VIRTUAL TOUR</title>
+	<link rel="icon" type="image/png" href="logo-PTIT-826x1024-removebg-preview.png" />
+	<link rel="shortcut icon" type="image/png" href="logo-PTIT-826x1024-removebg-preview.png" />
+	<link rel="apple-touch-icon" href="logo-PTIT-826x1024-removebg-preview.png" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
@@ -11,7 +14,7 @@
 		html { height:100%; }
 		body { height:100%; overflow:hidden; margin:0; padding:0; font-family:Arial, Helvetica, sans-serif; font-size:16px; color:#FFFFFF; background-color:#000000; }
 	</style>
-	<link rel="stylesheet" href="style.css?v=30" />
+	<link rel="stylesheet" href="style.css?v=34" />
 </head>
 <body>
 
@@ -23,6 +26,7 @@
                 <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
             </button>
             <div class="brand">
+                <img class="brand-left-logo" src="logo-PTIT-826x1024-removebg-preview.png" alt="PTIT Logo">
                 <div class="brand-info">
                     <h1>PTIT VIRTUAL TOUR</h1>
                     <span>Học viện Công nghệ Bưu chính Viễn thông</span>
@@ -30,6 +34,7 @@
             </div>
         </div>
         <div class="header-actions">
+            <img class="header-right-logo" src="IMG_20260403_162544-removebg-preview.png" alt="CTS Lab Logo">
             <button class="header-btn" id="info-btn" title="Thông tin">
                 <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
             </button>
@@ -58,10 +63,10 @@
         <div id="pano">
             <noscript><table style="width:100%;height:100%;"><tr style="vertical-align:middle;text-align:center;"><td>ERROR:<br><br>Javascript not activated<br><br></td></tr></table></noscript>
             <script src="tour.js"></script>
-            <script src="app.js?v=30"></script>
+            <script src="app.js?v=105"></script>
             <script>
                 embedpano({
-                    xml:"tour.xml", 
+                    xml:"tour.xml?v=10", 
                     target: "pano",
                     html5: "always",
                     mobilescale: 1.0,
@@ -69,6 +74,17 @@
                     onready: onready
                 });
             </script>
+        </div>
+
+        <div id="mini-game-overlay" class="mini-game-overlay">
+            <div class="mini-game-header">
+                <strong id="mini-game-title">Mini game</strong>
+                <div class="mini-game-actions">
+                    <button id="mini-game-fs" type="button" title="Bật/tắt toàn màn hình">⛶</button>
+                    <button id="mini-game-close" type="button" title="Đóng game">×</button>
+                </div>
+            </div>
+            <iframe id="mini-game-frame" title="Mini Game" src="about:blank" allowfullscreen allow="fullscreen; autoplay; gamepad; xr-spatial-tracking"></iframe>
         </div>
 
         <!-- Info Popup Modal (Centered & Expanded) -->
@@ -81,22 +97,15 @@
             </div>
             <div class="popup-content">
                 <h2 id="popup-title">Tiêu đề</h2>
-                
-                <div class="info-section">
-                    <h3>Loại phòng</h3>
-                    <p id="popup-type">Đang cập nhật...</p>
+                <div class="popup-edit-actions">
+                    <button id="popup-edit-btn" type="button">Sửa</button>
+                    <button id="popup-save-btn" type="button" style="display:none;">Lưu</button>
+                    <button id="popup-cancel-btn" type="button" style="display:none;">Hủy</button>
                 </div>
-
+                
                 <div class="info-section">
                     <h3>Mục đích sử dụng</h3>
                     <p id="popup-purpose">Mô tả thông tin chi tiết về cảnh quay này.</p>
-                </div>
-
-                <div class="info-section">
-                    <h3>Nội dung học tập / Công việc</h3>
-                    <ul id="popup-lessons" class="lessons-list">
-                        <li>Đang cập nhật...</li>
-                    </ul>
                 </div>
 
                 <div class="info-section">
@@ -108,6 +117,14 @@
 
         <!-- Modal Overlay -->
         <div id="popup-overlay"></div>
+
+        <!-- Hotspot quick info panel -->
+        <div id="hotspot-info" class="hotspot-info">
+            <button id="hotspot-info-close" class="hotspot-info-close" title="Đóng">×</button>
+            <h3 id="hotspot-info-title">Thông tin địa điểm</h3>
+            <p id="hotspot-info-text">Nội dung đang cập nhật...</p>
+            <button id="hotspot-info-more" class="hotspot-info-more" type="button">Xem thêm</button>
+        </div>
 
     </main>
 </div>

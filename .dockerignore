@@ -1,0 +1,7 @@
+.git
+*.xml - backup-*
+*.js.backup
+tour_testingserver*
+Dockerfile
+docker-compose.yml
+.dockerignore

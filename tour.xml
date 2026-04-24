@@ -9,18 +9,77 @@
 	<action name="open_web_info">
 		js(openInfo());
 	</action>
+	<action name="info_show_from_hotspot">
+		set(info_hs_name, %1);
+		set(info_title_val, get(hotspot[get(info_hs_name)].infotitle));
+		set(info_text_val, get(hotspot[get(info_hs_name)].infotext));
+		if(info_title_val == null OR info_title_val == '', set(info_title_val, 'Thông tin'); );
+		if(info_text_val == null OR info_text_val == '', set(info_text_val, 'Đang cập nhật...'); );
+		set(layer[xml_info_title].html, get(info_title_val));
+		set(layer[xml_info_text].html, get(info_text_val));
+		set(layer[xml_info_box].visible, true);
+	</action>
 
+	<action name="info_hide">
+		set(layer[xml_info_box].visible, false);
+	</action>
+
+	<layer name="xml_info_box"
+		type="container"
+		align="lefttop"
+		x="20"
+		y="80"
+		width="320"
+		autoheight="true"
+		bgalpha="0.82"
+		bgcolor="0x111111"
+		roundedge="10"
+		visible="false"
+		zorder="300">
+
+		<layer name="xml_info_title"
+			type="text"
+			x="12"
+			y="10"
+			width="296"
+			css="color:#ffffff;font-size:16px;font-weight:bold;" />
+
+		<layer name="xml_info_text"
+			type="text"
+			x="12"
+			y="40"
+			width="296"
+			autoheight="true"
+			css="color:#f1f1f1;font-size:13px;line-height:1.4;" />
+
+		<layer name="xml_info_close"
+			type="text"
+			align="righttop"
+			x="-8"
+			y="8"
+			html="✕"
+			css="color:#ffffff;font-size:16px;"
+			handcursor="true"
+			onclick="info_hide();" />
+	</layer>
     <!-- Info Hotspot Style -->
     <style name="skin_info_hotspot" 
-           url="https://res.cloudinary.com/dwekftmad/image/upload/v1773977375/info_icon.png" 
-           scale="0.5" 
+           url="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='30' fill='%23ffffff' opacity='0.2'/%3E%3Ccircle cx='50' cy='50' r='18' fill='%23ffffff' opacity='0.8'/%3E%3Ccircle cx='50' cy='50' r='12' fill='%23e31b23'/%3E%3C/svg%3E"
+           scale="0.6" 
            edge="center" 
-           distorted="true" 
+           distorted="false" 
            tooltip="Xem thông tin chi tiết"
-           onclick="open_web_info();" 
-           onover="tween(scale,0.6);" 
-           onout="tween(scale,0.5);"
+           onclick="js(window.openHotspotInfo(get(xml.scene), get(name)));" 
+           onloaded="do_crop_animation(1.2);"
+           onover="tween(scale,0.7,0.2);" 
+           onout="tween(scale,0.6,0.2);"
+           ondown="tween(scale,0.5,0.1);"
+           onup="tween(scale,0.6,0.1);"
            />
+
+	<action name="do_crop_animation">
+		tween(scale, %1, 1.0, easeOutSine, tween(scale, 0.6, 1.0, easeOutSine, do_crop_animation(%1)));
+	</action>
 
 	<!-- customize skin settings -->
 	<skin_settings maps="false"
@@ -98,14 +157,7 @@
 
 	
 
-		
-<layer name="logo"
-       url="logo_cts.ai.png"
-       align="topright"
-       x="10"
-       y="-50"
-       scale="0.5"
-       keep="true"/>
+
 	<scene name="scene_1" title="1" onstart="" thumburl="panos/1.tiles/thumb.jpg" lat="" lng="" alt="" heading="">
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
@@ -117,11 +169,6 @@
 		<image>
 			<cube url="panos/1.tiles/%s/l%l/%v/l%l_%s_%v_%h.jpg" multires="512,1024,1792" />
 		</image>
-
-		<hotspot name="info_spot" style="skin_info_hotspot" ath="185.0" atv="-10.0" />
-
-		<!-- Info Hotspot for Web UI -->
-		
 
 		<hotspot name="spot1955789621" style="skin_hotspotstyle" ath="-173.231" atv="16.812" depth="1000.0" linkedscene="scene_2" linkedscene_lookat="181.63,-3.41,131.27" linkedscene_spot="spot1955790043" linkedscene_hoffset="352.85" use3dtransition="true" />
 
@@ -236,6 +283,18 @@
 		<hotspot name="spot1955791193" style="skin_hotspotstyle" ath="356.684" atv="16.337" depth="1000.0" linkedscene="scene_6" linkedscene_lookat="184.68,-7.62,120.0" linkedscene_spot="spot1955791073" linkedscene_hoffset="0.0" use3dtransition="true" />
 		<hotspot name="spot1955791232" style="skin_hotspotstyle" ath="171.738" atv="10.617" depth="1000.0" linkedscene="scene_8" linkedscene_lookat="186.12,-2.41,120.0" linkedscene_spot="spot1955791403" linkedscene_hoffset="12.9" use3dtransition="true" />
 		<hotspot name="spot1955818317" style="skin_hotspotstyle" ath="91.246" atv="9.51" depth="1000.0" linkedscene="scene_gpbk2222_1773131201563" linkedscene_spot="spot1955817862" linkedscene_hoffset="267.94" use3dtransition="true" />
+		<hotspot name="info_scene7_a1"
+		         style="skin_info_hotspot"
+		         ath="82.781"
+		         atv="12.184"
+		         zorder="999"
+		         handcursor="true"
+		         onclick="js(window.openHotspotInfo('scene_7','a1_scene7_intro','info_scene7_a1'));"
+		         onover="tween(scale,0.3);"
+		         onout="tween(scale,0.3);"
+		         ondown="tween(scale,0.3);"
+		         onup="tween(scale,0.3);" />
+	
 
 	</scene>
 
@@ -278,7 +337,7 @@
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
 
-		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
+		<view hlookat="181.455" vlookat="-14.931" fovtype="MFOV" fov="131.876" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
 		<preview url="panos/10.tiles/preview.jpg" />
 
@@ -612,7 +671,7 @@
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
 
-		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
+		<view hlookat="183.697" vlookat="-10.360" fovtype="MFOV" fov="136.082" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
 		<preview url="panos/GPBK2195_1773130397237.tiles/preview.jpg" />
 
@@ -729,6 +788,7 @@
 		<hotspot name="spot1955821036" style="skin_hotspotstyle" ath="-171.021" atv="17.613" depth="1000.0" linkedscene="scene_gpbk2202_1773130555661" linkedscene_spot="spot1955821392" linkedscene_hoffset="348.87" use3dtransition="true" />
 		<hotspot name="spot1955821476" style="skin_hotspotstyle" ath="94.697" atv="11.183" depth="1000.0" linkedscene="scene_gpbk2200_1773130524459" linkedscene_spot="spot1955821594" linkedscene_hoffset="-89.47" use3dtransition="true" />
 
+
 	</scene>
 
 	<scene name="scene_gpbk2202_1773130555661" title="GPBK2202_1773130555661" onstart="" thumburl="panos/GPBK2202_1773130555661.tiles/thumb.jpg" lat="" lng="" alt="" heading="">
@@ -743,8 +803,21 @@
 			<cube url="panos/GPBK2202_1773130555661.tiles/%s/l%l/%v/l%l_%s_%v_%h.jpg" multires="512,1024,1792" />
 		</image>
 
-		<hotspot name="info_spot" style="skin_info_hotspot" ath="20.0" atv="0.0" />
+		<hotspot name="info_library_main"
+		         style="skin_info_hotspot"
+		         ath="20.0" atv="0.0"
+		         zorder="999"
+		         handcursor="true"
+		         onclick="js(window.openHotspotInfo('scene_gpbk2202_1773130555661','library_intro','info_library_main'));"
+		         tooltip="Thông tin Thư viện" />
 
+		<hotspot name="info_library_lookup"
+		         style="skin_info_hotspot"
+		         ath="-10.0" atv="10.0"
+		         zorder="999"
+		         handcursor="true"
+		         onclick="js(window.openHotspotInfo('scene_gpbk2202_1773130555661','library_lookup','info_library_lookup'));"
+		         tooltip="Khu vực tra cứu thông tin" />
 		<hotspot name="spot1955821392" style="skin_hotspotstyle" ath="-2.146" atv="15.98" depth="1000.0" linkedscene="scene_gpbk2201_1773130534438" linkedscene_spot="spot1955821036" linkedscene_hoffset="11.13" use3dtransition="true" />
 		<hotspot name="spot1955822743" style="skin_hotspotstyle" ath="101.14" atv="12.661" depth="1000.0" linkedscene="scene_gpbk2203_1773130660359" linkedscene_spot="spot1955822908" linkedscene_hoffset="252.25" use3dtransition="true" />
 
@@ -761,7 +834,6 @@
 		<image>
 			<cube url="panos/GPBK2203_1773130660359.tiles/%s/l%l/%v/l%l_%s_%v_%h.jpg" multires="512,1024,1792" />
 		</image>
-		<hotspot name="info_spot" style="skin_info_hotspot" ath="45.0" atv="5.0" />
 
 		<hotspot name="spot1955822908" style="skin_hotspotstyle" ath="173.386" atv="19.938" depth="1000.0" linkedscene="scene_gpbk2202_1773130555661" linkedscene_spot="spot1955822743" linkedscene_hoffset="107.75" use3dtransition="true" />
 		<hotspot name="spot1955822944" style="skin_hotspotstyle" ath="40.591" atv="8.949" depth="1000.0" linkedscene="scene_gpbk2204_1773130697446" linkedscene_spot="spot1955823086" linkedscene_hoffset="51.04" use3dtransition="true" />
@@ -891,7 +963,7 @@
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
 
-		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
+		<view hlookat="184.522" vlookat="-5.446" fovtype="MFOV" fov="122.382" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
 		<preview url="panos/GPBK2218_1773131077123.tiles/preview.jpg" />
 
@@ -1275,7 +1347,13 @@
 
 		<hotspot name="spot1955814044" style="skin_hotspotstyle" ath="-1.626" atv="-0.901" depth="1000.0" linkedscene="scene_gpbk2242_1773200327351" linkedscene_spot="spot1955813950" linkedscene_hoffset="3.77" use3dtransition="true" />
 		<hotspot name="spot1955814082" style="skin_hotspotstyle" ath="178.614" atv="30.657" depth="1000.0" linkedscene="scene_10" linkedscene_spot="spot1955814281" linkedscene_hoffset="178.78" use3dtransition="true" />
-
+		<hotspot name="info_scene_gpbk2243_1773200339308_a2"
+         style="skin_info_hotspot"
+         ath="0.467"
+         atv="-7.342"
+         infotitle="Tòa A1"
+         infotext="Khu vực trước cửa Tòa A2."
+         onclick="info_show_from_hotspot(get(name));" />
 	</scene>
 
 	<scene name="scene_gpbk2244_1773200362117" title="GPBK2244_1773200362117" onstart="" thumburl="panos/GPBK2244_1773200362117.tiles/thumb.jpg" lat="" lng="" alt="" heading="">
@@ -1731,8 +1809,45 @@
 		<image>
 			<cube url="panos/GPBK2270_1773201080635.tiles/%s/l%l/%v/l%l_%s_%v_%h.jpg" multires="512,1024,1792" />
 		</image>
-		<hotspot name="info_spot" style="skin_info_hotspot" ath="-45.0" atv="8.0" />
+		<hotspot name="info_labcts_main"
+		         style="skin_info_hotspot"
+		         ath="0.0" atv="-20.0"
+		         zorder="999"
+		         handcursor="true"
+		         onclick="js(window.openHotspotInfo('scene_gpbk2270_1773201080635','labcts_intro','info_labcts_main'));"
+		         tooltip="Tổng quan Lab CTS" />
 
+		<hotspot name="info_labcts_ws1"
+		         style="skin_info_hotspot"
+		         ath="60.0" atv="10.0"
+		         zorder="999"
+		         handcursor="true"
+		         onclick="js(window.openHotspotInfo('scene_gpbk2270_1773201080635','labcts_ws1','info_labcts_ws1'));"
+		         tooltip="Xem cấu hình PC" />
+
+		<hotspot name="info_labcts_vr"
+		         style="skin_info_hotspot"
+		         ath="20.0" atv="12.0"
+		         zorder="999"
+		         handcursor="true"
+		         onclick="js(window.openHotspotInfo('scene_gpbk2270_1773201080635','labcts_vr','info_labcts_vr'));"
+		         tooltip="Khu thiết bị VR" />
+
+		<hotspot name="info_labcts_project_area"
+		         style="skin_info_hotspot"
+		         ath="90.0" atv="5.0"
+		         zorder="999"
+		         handcursor="true"
+		         onclick="js(window.openHotspotInfo('scene_gpbk2270_1773201080635','labcts_project_area','info_labcts_project_area'));"
+		         tooltip="Khu vực dự án" />
+
+		<hotspot name="info_labcts_activity"
+		         style="skin_info_hotspot"
+		         ath="-70.0" atv="15.0"
+		         zorder="999"
+		         handcursor="true"
+		         onclick="js(window.openHotspotInfo('scene_gpbk2270_1773201080635','labcts_activity','info_labcts_activity'));"
+		         tooltip="Hoạt động nghiên cứu" />
 		<hotspot name="spot1955799894" style="skin_hotspotstyle" ath="185.773" atv="7.857" depth="1000.0" linkedscene="scene_gpbk2269_1773201067744" linkedscene_spot="spot1955799842" linkedscene_hoffset="0.0" use3dtransition="true" />
 		<hotspot name="spot1955799952" style="skin_hotspotstyle" ath="8.574" atv="15.356" depth="1000.0" linkedscene="scene_gpbk2271_1773201137016" linkedscene_lookat="0.0,0.0,120.0" linkedscene_spot="spot1955800042" linkedscene_hoffset="350.27" use3dtransition="true" />
 
@@ -1914,7 +2029,7 @@
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
 
-		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
+		<view hlookat="1.026" vlookat="-3.055" fovtype="MFOV" fov="112.088" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
 		<preview url="panos/GPBK2281_1773201322312.tiles/preview.jpg" />
 
