@@ -1,7 +1,7 @@
 services:
   vr-tour:
     build: .
-    image: ptit-vr-tour:latest
+    image: hoanglong2534/vr-tour:latest
     container_name: ptit-vr-tour
     ports:
       - "8080:80"
